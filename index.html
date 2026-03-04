@@ -749,7 +749,7 @@ function renderArticle(d) {
 // ── RENDER CAPTION ───────────────────────────────────────
 function renderCaption(d) {
   document.getElementById('caption-text').innerHTML =
-    `${d.caption}<br><br><span class="caption-hashtags">${d.hashtags}</span><br>🔗 tunoticias.com/liga`;
+    `${d.caption}<br><br><span class="caption-hashtags">${d.hashtags}</span><br>🔗https://tuliganoticias.blogspot.com/`;
   document.getElementById('caption-section').style.display = 'block';
 }
 
@@ -757,7 +757,7 @@ function renderCaption(d) {
 function copyCaption() {
   if (!currentData) return;
   navigator.clipboard.writeText(
-    `${currentData.caption}\n\n${currentData.hashtags}\n\n🔗 tunoticias.com/liga`
+    `${currentData.caption}\n\n${currentData.hashtags}\n\n🔗https://tuliganoticias.blogspot.com/`
   );
   const btn = document.getElementById('btn-copy-caption');
   btn.textContent = '✅ ¡Copiado!'; btn.classList.add('copied');
