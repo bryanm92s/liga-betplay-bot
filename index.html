@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bot Liga BetPlay — TikTok + Web</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green: #00E5A0;
+    --bg: #03060D;
+    --surface: #080E18;
+    --surface2: #0D1520;
+    --text: #F0F4F8;
+    --muted: rgba(240,244,248,0.45);
+    --border: rgba(240,244,248,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(0,229,160,0.06) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, rgba(0,100,60,0.05) 0%, transparent 60%);
+    color: var(--text);
+    font-family: 'Lora', Georgia, serif;
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── SETUP SCREEN ── */
+  #setup-screen {
+    max-width: 480px; margin: 80px auto; text-align: center;
+  }
+  #setup-screen h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 52px; font-weight: 900; letter-spacing: 3px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #fff 30%, var(--green) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  #setup-screen p { color: var(--muted); font-size: 15px; line-height: 1.7; margin-bottom: 32px; }
+  .setup-steps {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; text-align: left; margin-bottom: 28px;
+  }
+  .setup-step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
+  .setup-step:last-child { margin-bottom: 0; }
+  .step-num {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(0,229,160,0.15); border: 1px solid rgba(0,229,160,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--green);
+  }
+  .step-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .step-text a { color: var(--green); text-decoration: none; }
+  .step-text strong { color: var(--text); }
+  .api-input-wrap { position: relative; margin-bottom: 12px; }
+  .api-input-wrap input {
+    width: 100%; padding: 14px 46px 14px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 14px;
+    font-family: monospace; outline: none; transition: border-color 0.2s;
+  }
+  .api-input-wrap input:focus { border-color: rgba(0,229,160,0.4); }
+  .toggle-key {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px;
+  }
+  .btn-primary {
+    width: 100%; padding: 15px;
+    background: linear-gradient(135deg, var(--green), #00B87A);
+    border: none; border-radius: 10px; color: #050A14;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 18px;
+    font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ── MAIN APP ── */
+  #app { display: none; max-width: 1100px; margin: 0 auto; }
+  .app-header { text-align: center; margin-bottom: 40px; }
+  .app-header .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,229,160,0.07); border: 1px solid rgba(0,229,160,0.18);
+    border-radius: 50px; padding: 6px 18px; margin-bottom: 14px;
+    font-family: monospace; font-size: 10px; color: var(--green); letter-spacing: 3px;
+  }
+  .app-header h1 {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 900;
+    letter-spacing: 3px; text-transform: uppercase;
+    background: linear-gradient(135deg, #fff 30%, var(--green) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .app-header p { color: var(--muted); font-size: 13px; letter-spacing: 1px; }
+
+  /* LAYOUT */
+  .main-layout { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+  /* SIDEBAR */
+  .sidebar { flex: 0 0 270px; }
+  .label {
+    font-family: monospace; font-size: 10px; color: var(--green);
+    letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 10px;
+  }
+  .topic-btn {
+    width: 100%; padding: 10px 14px; text-align: left; cursor: pointer;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted); font-size: 13px;
+    font-family: 'Lora', serif; transition: all 0.2s; margin-bottom: 7px;
+    display: block;
+  }
+  .topic-btn.active, .topic-btn:hover {
+    background: rgba(0,229,160,0.12); border-color: rgba(0,229,160,0.35);
+    color: var(--green);
+  }
+  .text-input {
+    width: 100%; padding: 11px 14px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 13px;
+    font-family: 'Lora', serif; outline: none; margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  .text-input:focus { border-color: rgba(0,229,160,0.4); }
+  #btn-generate {
+    width: 100%; padding: 15px; background: linear-gradient(135deg, var(--green), #00B87A);
+    border: none; border-radius: 10px; color: #050A14;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+    font-weight: 900; letter-spacing: 2.5px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.3s; margin-bottom: 8px;
+  }
+  #btn-generate:disabled {
+    background: rgba(0,229,160,0.07); color: rgba(0,229,160,0.3); cursor: not-allowed;
+  }
+  .change-key-btn {
+    width: 100%; padding: 8px; background: none;
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); font-size: 11px; font-family: 'Lora', serif;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
+  }
+  .change-key-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  /* Caption box */
+  .caption-box {
+    margin-top: 24px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; font-size: 13px;
+    color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 9px;
+  }
+  .caption-hashtags { color: var(--green); }
+  .btn-copy {
+    width: 100%; padding: 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted); cursor: pointer;
+    font-size: 13px; font-family: 'Lora', serif; transition: all 0.2s;
+  }
+  .btn-copy:hover, .btn-copy.copied {
+    background: rgba(0,229,160,0.12); border-color: rgba(0,229,160,0.4); color: var(--green);
+  }
+  #error-box {
+    display: none; margin-top: 14px; padding: 11px 14px;
+    background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.25);
+    border-radius: 8px; font-size: 12px; color: #FF7070; line-height: 1.5;
+  }
+
+  /* OUTPUT */
+  .output-area { flex: 1; min-width: 400px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tab-btn {
+    padding: 9px 20px; background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); cursor: pointer; font-size: 13px;
+    font-family: 'Lora', serif; transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: rgba(0,229,160,0.14); border-color: rgba(0,229,160,0.4);
+    color: var(--green); font-weight: 600;
+  }
+
+  /* PLACEHOLDER / SPINNER */
+  .placeholder {
+    width: 100%; height: 480px;
+    background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.07);
+    border-radius: 20px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+    color: rgba(255,255,255,0.12);
+  }
+  .placeholder .icon { font-size: 48px; }
+  .placeholder p { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-family: monospace; }
+  .spinner-wrap {
+    display: none; width: 100%; height: 480px;
+    background: rgba(0,229,160,0.02); border: 2px dashed rgba(0,229,160,0.15);
+    border-radius: 20px; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 46px; height: 46px;
+    border: 3px solid rgba(0,229,160,0.15); border-top-color: var(--green);
+    border-radius: 50%; animation: spin 0.9s linear infinite;
+  }
+  .spinner-text { font-family: monospace; font-size: 12px; color: var(--green); letter-spacing: 2px; }
+
+  /* POST CARD */
+  #post-panel { display: none; justify-content: center; }
+  .post-card {
+    width: 400px; border-radius: 20px; overflow: hidden;
+    font-family: 'Lora', serif; background: #050A14;
+    box-shadow: 0 30px 80px rgba(0,229,160,0.15), 0 0 0 1px rgba(0,229,160,0.1);
+  }
+  .post-img-hero {
+    position: relative; height: 240px; overflow: hidden; background: #0D1117;
+  }
+  .post-img-hero img {
+    width: 100%; height: 100%; object-fit: contain; display: block;
+    padding: 20px;
+  }
+  .post-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(5,10,20,0.96) 85%);
+  }
+  .post-category-pill {
+    position: absolute; top: 14px; left: 14px;
+    background: var(--green); border-radius: 50px; padding: 5px 14px;
+    font-family: monospace; font-size: 10px; font-weight: 900;
+    color: #050A14; letter-spacing: 2.5px; text-transform: uppercase;
+  }
+  .post-team-badge {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+    border-radius: 8px; padding: 5px 10px;
+    border: 1px solid rgba(0,229,160,0.3);
+    font-family: monospace; font-size: 11px; font-weight: 700;
+    color: var(--green); letter-spacing: 1px;
+  }
+  .post-headline {
+    position: absolute; bottom: 14px; left: 14px; right: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 900; color: #fff;
+    line-height: 1.15; text-transform: uppercase;
+    text-shadow: 0 2px 16px rgba(0,0,0,1); letter-spacing: 0.5px;
+  }
+  .post-body { padding: 18px 20px 14px; background: #050A14; }
+  .post-divider {
+    height: 2px; border-radius: 2px; margin-bottom: 14px;
+    background: linear-gradient(90deg, var(--green), transparent);
+  }
+  .post-summary { font-size: 14px; color: rgba(255,255,255,0.82); line-height: 1.65; margin-bottom: 14px; }
+  .post-highlight {
+    background: rgba(0,229,160,0.08); border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 16px;
+  }
+  .post-highlight-label {
+    font-family: monospace; font-size: 10px; font-weight: 700; color: var(--green);
+    letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 4px;
+  }
+  .post-highlight-text { font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.5; }
+  .post-cta {
+    background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.25);
+    border-radius: 10px; padding: 11px 14px; text-align: center;
+  }
+  .post-cta-label { font-size: 11px; color: rgba(255,255,255,0.42); display: block; margin-bottom: 2px; }
+  .post-cta-url {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 900;
+    color: var(--green); letter-spacing: 1.5px;
+  }
+  .post-footer {
+    padding: 9px 20px; border-top: 1px solid rgba(0,229,160,0.08);
+    display: flex; justify-content: space-between; background: #030709;
+  }
+  .post-footer-date { font-family: monospace; font-size: 10px; color: rgba(255,255,255,0.28); letter-spacing: 1px; }
+  .post-footer-tag { font-family: monospace; font-size: 10px; color: var(--green); opacity: 0.5; letter-spacing: 1px; }
+
+  /* ARTICLE PANEL */
+  #article-panel {
+    display: none; width: 100%; max-width: 680px;
+    background: var(--surface); border-radius: 16px;
+    border: 1px solid rgba(0,229,160,0.12);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,229,160,0.08);
+  }
+  .article-header {
+    background: rgba(0,229,160,0.08); border-bottom: 1px solid rgba(0,229,160,0.15);
+    padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .article-header-left { display: flex; gap: 8px; align-items: center; }
+  .article-header-label { font-family: monospace; font-size: 10px; color: var(--green); letter-spacing: 2px; text-transform: uppercase; }
+  .article-word-count {
+    font-size: 10px; background: rgba(0,229,160,0.15); color: var(--green);
+    border-radius: 4px; padding: 2px 8px; font-family: monospace;
+  }
+  .btn-copy-article {
+    padding: 6px 16px; background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); cursor: pointer; font-size: 12px;
+    font-family: 'Lora', serif; transition: all 0.2s;
+  }
+  .btn-copy-article:hover, .btn-copy-article.copied {
+    background: rgba(0,229,160,0.12); border-color: rgba(0,229,160,0.4); color: var(--green);
+  }
+  .article-content { padding: 28px; max-height: 520px; overflow-y: auto; }
+  .article-meta { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
+  .article-category {
+    font-size: 10px; background: var(--green); color: #050A14;
+    border-radius: 50px; padding: 4px 12px; font-weight: 900;
+    letter-spacing: 2px; font-family: monospace;
+  }
+  .article-date { font-size: 11px; color: var(--muted); font-family: monospace; }
+  .article-seo-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 900;
+    color: var(--text); line-height: 1.2; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .article-meta-desc {
+    font-size: 13px; color: var(--green); font-style: italic;
+    margin-bottom: 20px; line-height: 1.5; opacity: 0.8;
+  }
+  .article-divider {
+    height: 1px; background: linear-gradient(90deg, rgba(0,229,160,0.4), transparent);
+    margin-bottom: 20px;
+  }
+  .article-section { margin-bottom: 22px; }
+  .article-section h3 {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+    color: var(--green); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
+  }
+  .article-section p { font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.8; }
+  .article-cta {
+    margin-top: 24px; padding: 14px 18px;
+    background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 10px; text-align: center;
+  }
+  .article-cta p { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .article-cta span { font-family: monospace; font-size: 12px; color: var(--green); letter-spacing: 1px; }
+
+  /* IMAGE PICKER */
+  .img-picker-wrap {
+    width: 400px; margin-top: 12px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .img-picker-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .img-picker-tab {
+    flex: 1; padding: 9px; background: none; border: none;
+    color: var(--muted); font-size: 12px; font-family: 'Lora', serif; cursor: pointer;
+  }
+  .img-picker-tab.active { background: rgba(0,229,160,0.08); color: var(--green); border-bottom: 2px solid var(--green); }
+  .img-picker-body { padding: 12px; }
+  .img-picker-row { display: flex; gap: 8px; }
+  .img-picker-input {
+    flex: 1; padding: 9px 12px; background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+    font-size: 12px; font-family: monospace; outline: none;
+  }
+  .img-picker-input:focus { border-color: rgba(0,229,160,0.4); }
+  .img-picker-btn {
+    padding: 9px 14px; background: rgba(0,229,160,0.12); border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 8px; color: var(--green); font-size: 12px; cursor: pointer;
+    font-family: 'Lora', serif; white-space: nowrap;
+  }
+  .img-picker-btn:hover { background: rgba(0,229,160,0.22); }
+  .img-picker-hint { font-size: 10px; color: var(--muted); margin-top: 7px; font-family: monospace; }
+  #file-upload-input { display: none; }
+  .article-img-wrap {
+    width: 100%; height: 200px; border-radius: 10px; overflow: hidden;
+    margin-bottom: 18px; background: #0D1520; border: 1px solid var(--border);
+  }
+  .article-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .article-img-url {
+    margin-bottom: 14px; padding: 8px 12px;
+    background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.15);
+    border-radius: 8px; display: flex; align-items: center; gap: 10px;
+  }
+  .article-img-url span { font-size: 10px; color: var(--muted); font-family: monospace; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .article-img-copy-btn {
+    padding: 4px 10px; background: rgba(0,229,160,0.12); border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 6px; color: var(--green); font-size: 10px; cursor: pointer; font-family: monospace; white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* scrollbar */
+  .article-content::-webkit-scrollbar { width: 4px; }
+  .article-content::-webkit-scrollbar-track { background: transparent; }
+  .article-content::-webkit-scrollbar-thumb { background: rgba(0,229,160,0.3); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══════════════════════════════════════ -->
+<div id="setup-screen">
+  <h1>Liga BetPlay Bot</h1>
+  <p>Para usar el bot necesitas una API Key gratuita de Groq.<br/>Solo la configuras una vez.</p>
+
+  <div class="setup-steps">
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        Ve a <a href="https://console.groq.com/keys" target="_blank"><strong>console.groq.com/keys</strong></a>
+        y crea una cuenta gratis (sin tarjeta)
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        Clic en <strong>"Create API Key"</strong> → copia la clave que empieza por <strong>gsk_...</strong>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        Pégala abajo y listo. La clave se guarda solo en tu navegador, <strong>nadie más la ve.</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-input-wrap">
+    <input type="password" id="api-key-input" placeholder="gsk_...tu clave de Groq"/>
+    <button class="toggle-key" onclick="toggleKeyVisibility()">👁</button>
+  </div>
+  <button class="btn-primary" onclick="saveApiKey()">⚡ EMPEZAR A USAR EL BOT</button>
+  <p style="margin-top:12px; font-size:11px; color:var(--muted);">
+    ✅ Completamente gratis · ✅ Sin tarjeta de crédito · ✅ Funciona en cualquier dispositivo
+  </p>
+</div>
+
+<!-- ══ MAIN APP ══════════════════════════════════════════ -->
+<div id="app">
+  <div class="app-header">
+    <div class="pill">⚽ BOT DE CONTENIDO — TIKTOK + WEB</div>
+    <h1>Liga BetPlay</h1>
+    <p>Noticias reales · Post con imagen · Artículo completo para tu web</p>
+  </div>
+
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <span class="label">ELIGE EL TEMA</span>
+      <div id="topics-list"></div>
+
+      <span class="label" style="margin-top:4px;">O ESCRIBE TU TEMA</span>
+      <input class="text-input" id="custom-topic" placeholder="Ej: Falcao en Junior, Millonarios..."
+        onkeydown="if(event.key==='Enter') generate()"/>
+
+      <button id="btn-generate" onclick="generate()">⚡ GENERAR TODO</button>
+      <button class="change-key-btn" onclick="changeKey()">🔑 Cambiar API Key</button>
+
+      <div id="error-box"></div>
+
+      <!-- Caption -->
+      <div id="caption-section" style="display:none; margin-top:24px;">
+        <span class="label">📋 CAPTION TIKTOK</span>
+        <div class="caption-box" id="caption-text"></div>
+        <button class="btn-copy" id="btn-copy-caption" onclick="copyCaption()">📋 Copiar caption completo</button>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-area">
+      <div class="tabs" id="tabs" style="display:none;">
+        <button class="tab-btn active" id="tab-post" onclick="switchTab('post')">📸 Post TikTok</button>
+        <button class="tab-btn" id="tab-article" onclick="switchTab('article')">📄 Artículo Web</button>
+      </div>
+
+      <div id="placeholder" class="placeholder">
+        <div class="icon">⚡</div>
+        <p>Un clic genera Post TikTok + Artículo Web</p>
+      </div>
+
+      <div class="spinner-wrap" id="spinner">
+        <div class="spinner"></div>
+        <p class="spinner-text">BUSCANDO Y REDACTANDO...</p>
+      </div>
+
+      <div id="post-panel">
+        <div class="post-card" id="post-card">
+          <div class="post-img-hero" id="post-img-hero">
+            <img id="post-img" src="" alt="" onerror="this.style.display='none'; document.getElementById('post-img-fallback').style.display='flex'"/>
+            <div id="post-img-fallback" style="display:none; width:100%; height:100%; background: linear-gradient(135deg,#050A14,#0D1520); align-items:center; justify-content:center;">
+              <span style="font-size:72px; opacity:0.15">⚽</span>
+            </div>
+            <div class="post-img-overlay"></div>
+            <div class="post-category-pill" id="post-category"></div>
+            <div class="post-team-badge" id="post-team" style="display:none;"></div>
+            <div class="post-headline" id="post-headline"></div>
+          </div>
+          <div class="post-body">
+            <div class="post-divider"></div>
+            <div class="post-summary" id="post-summary"></div>
+            <div class="post-highlight" id="post-highlight-wrap">
+              <span class="post-highlight-label">📌 DATO CLAVE</span>
+              <span class="post-highlight-text" id="post-highlight"></span>
+            </div>
+            <div class="post-cta">
+              <span class="post-cta-label">🔗 Lee la noticia completa en:</span>
+              <span class="post-cta-url" id="post-url">tuliganoticias.blogspot.com</span>
+            </div>
+          </div>
+          <div class="post-footer">
+            <span class="post-footer-date" id="post-date"></span>
+            <button onclick="toggleImgPicker()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Lora',serif;" onmouseover="this.style.color='var(--green)'" onmouseout="this.style.color='var(--muted)'">📷 Cambiar imagen</button>
+            <span class="post-footer-tag">#LIGABETPLAY</span>
+          </div>
+        </div>
+
+        <div class="img-picker-wrap" id="img-picker" style="display:none;">
+          <div class="img-picker-tabs">
+            <button class="img-picker-tab active" id="tab-url" onclick="switchPickerTab('url')">🔗 Pegar URL</button>
+            <button class="img-picker-tab" id="tab-file" onclick="switchPickerTab('file')">📁 Desde mi dispositivo</button>
+          </div>
+          <div class="img-picker-body" id="picker-url-body">
+            <div class="img-picker-row">
+              <input class="img-picker-input" id="img-url-input" type="text" placeholder="https://ejemplo.com/imagen.jpg"/>
+              <button class="img-picker-btn" onclick="applyUrlImage()">✅ Aplicar</button>
+            </div>
+            <p class="img-picker-hint">💡 Google Imágenes → clic derecho → "Copiar dirección de imagen" → pega aquí</p>
+          </div>
+          <div class="img-picker-body" id="picker-file-body" style="display:none;">
+            <div class="img-picker-row">
+              <button class="img-picker-btn" style="flex:1;" onclick="document.getElementById('file-upload-input').click()">📂 Seleccionar de mi galería / computador</button>
+              <input type="file" id="file-upload-input" accept="image/*" onchange="applyFileImage(event)"/>
+            </div>
+            <p class="img-picker-hint">💡 Selecciona cualquier imagen de tu dispositivo</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="article-panel">
+        <div class="article-header">
+          <div class="article-header-left">
+            <span class="article-header-label">📄 ARTÍCULO PARA TU WEB</span>
+            <span class="article-word-count" id="article-word-count"></span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-copy-article" id="btn-copy-html" onclick="copyArticleHTML()">🌐 Copiar HTML</button>
+            <button class="btn-copy-article" id="btn-copy-plain" onclick="copyArticlePlain()">📋 Copiar texto</button>
+          </div>
+        </div>
+        <div class="article-content">
+          <div class="article-meta">
+            <span class="article-category" id="article-category"></span>
+            <span class="article-date" id="article-date"></span>
+          </div>
+          <div class="article-seo-title" id="article-seo-title"></div>
+          <div class="article-meta-desc" id="article-meta-desc"></div>
+          <div id="article-img-wrap" class="article-img-wrap" style="display:none;">
+            <img id="article-img" src="" alt=""/>
+          </div>
+          <div id="article-img-url-row" class="article-img-url" style="display:none;">
+            <span id="article-img-url-text">—</span>
+            <button class="article-img-copy-btn" onclick="copyImageUrl()">📋 Copiar URL</button>
+          </div>
+          <div class="article-divider"></div>
+          <div id="article-sections"></div>
+          <div class="article-cta">
+            <p>🔔 Síguenos en TikTok para más noticias de la Liga BetPlay en tiempo real</p>
+            <span id="article-cta-handle">@ligabetplaynow_ · #LigaBetPlay</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TEMAS ────────────────────────────────────────────────
+const TOPICS = [
+  "Últimas noticias Liga BetPlay hoy",
+  "Fichajes y transferencias Liga BetPlay",
+  "Resultados partidos Liga BetPlay",
+  "Tabla de posiciones Liga BetPlay",
+  "Goleadores Liga BetPlay 2025",
+];
+let selectedTopic = TOPICS[0];
+let currentData = null;
+
+// ── SETUP ────────────────────────────────────────────────
+function toggleKeyVisibility() {
+  const inp = document.getElementById('api-key-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('gsk_')) {
+    alert('La API Key debe empezar por "gsk_...". Revisa que la copiaste completa.');
+    return;
+  }
+  localStorage.setItem('groq_api_key', key);
+  initApp();
+}
+function changeKey() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'block';
+}
+function getApiKey() { return localStorage.getItem('groq_api_key'); }
+
+// ── INIT ─────────────────────────────────────────────────
+window.onload = () => {
+  if (getApiKey()) { initApp(); }
+  else { document.getElementById('setup-screen').style.display = 'block'; }
+};
+
+function initApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  renderTopics();
+}
+
+function renderTopics() {
+  const wrap = document.getElementById('topics-list');
+  wrap.innerHTML = '';
+  TOPICS.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn' + (t === selectedTopic ? ' active' : '');
+    btn.textContent = t;
+    btn.onclick = () => {
+      selectedTopic = t;
+      document.getElementById('custom-topic').value = '';
+      renderTopics();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+// ── LIMPIEZA ─────────────────────────────────────────────
+function clean(text) {
+  if (!text) return '';
+  return text
+    .replace(/<[^>]+>/g, '')
+    .replace(/\[.*?\]/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+// ── COLORES POR EQUIPO ───────────────────────────────────
+const TEAM_COLORS = {
+  "millonarios": "#FFD700", "america": "#FF6666", "nacional": "#00FF88",
+  "santa fe": "#FF9999", "junior": "#FFD700", "cali": "#FFFFFF",
+  "tolima": "#FFD700", "internacional": "#FFD700", "pasto": "#FFD700",
+  "bucaramanga": "#FFFFFF", "medellin": "#FFFFFF",
+};
+function getAccent(team) {
+  if (!team) return '#00E5A0';
+  const t = team.toLowerCase();
+  for (const [k, v] of Object.entries(TEAM_COLORS))
+    if (t.includes(k)) return v;
+  return '#00E5A0';
+}
+
+// ── IMAGEN ───────────────────────────────────────────────
+// ── LOGOS EQUIPOS (Wikipedia article titles) ─────────────
+const TEAM_WIKI = {
+  "millonarios":    "Millonarios FC",
+  "fortaleza":      "Fortaleza",
+  "america":        "América de Cali",
+  "nacional":       "Atlético Nacional",
+  "santa fe":       "Independiente Santa Fe",
+  "junior":         "Atlético Junior",
+  "cali":           "Deportivo Cali",
+  "tolima":         "Deportes Tolima",
+  "bucaramanga":    "Atlético Bucaramanga",
+  "medellin":       "Independiente Medellín",
+  "medellín":       "Independiente Medellín",
+  "pereira":        "Deportivo Pereira",
+  "envigado":       "Envigado FC",
+  "once caldas":    "Once Caldas",
+  "pasto":          "Deportivo Pasto",
+  "inter bogotá":   "Inter Bogotá",
+  "inter bogota":   "Inter Bogota",
+  "jaguares":       "Jaguares de Córdoba",
+  "aguilas":        "Águilas Doradas",
+  "águilas":        "Águilas Doradas",
+  "chicó":          "Boyacá Chicó FC",
+  "chico":          "Boyacá Chicó FC",
+  "cúcuta":         "Cúcuta Deportivo",
+  "cucuta":         "Cúcuta Deportivo",
+  "alianza":        "Alianza Petrolera",
+  "Llaneros":       "Llaneros",
+};
+
+async function fetchTeamLogo(teamName) {
+  if (!teamName) return null;
+  const t = teamName.toLowerCase();
+  let wikiTitle = null;
+  for (const [key, title] of Object.entries(TEAM_WIKI)) {
+    if (t.includes(key)) { wikiTitle = title; break; }
+  }
+  if (!wikiTitle) return null;
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle)}&prop=pageimages&format=json&pithumbsize=300&origin=*`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const pages = data.query?.pages || {};
+    const page = Object.values(pages)[0];
+    return page?.thumbnail?.source || null;
+  } catch(_) { return null; }
+}
+
+// ── GENERATE ─────────────────────────────────────────────
+async function generate() {
+  const apiKey = getApiKey();
+  if (!apiKey) { changeKey(); return; }
+
+  const custom = document.getElementById('custom-topic').value.trim();
+  const topic = custom || selectedTopic;
+
+  setLoading(true);
+  hideError();
+
+  const today = new Date().toLocaleDateString('es-CO');
+  const prompt = `Eres un periodista deportivo colombiano experto en Liga BetPlay.
+Tu tarea es generar contenido sobre: "${topic}". Hoy es ${today}.
+
+REGLAS CRÍTICAS:
+- Devuelve ÚNICAMENTE el JSON, sin backticks, sin texto antes o después
+- NUNCA uses etiquetas HTML como <cite>, <b>, <a> ni corchetes [1]
+- Solo texto plano limpio en todos los campos
+- El artículo debe tener mínimo 350 palabras
+- Si recibes noticias reales al final de este mensaje, ÚSALAS como base principal
+- NO inventes fechas, resultados ni fichajes que no estén en las noticias recibidas
+
+Formato JSON exacto:
+{
+  "headline": "TITULAR EN MAYÚSCULAS máximo 70 caracteres",
+  "summary": "Resumen 2 oraciones con los hechos clave.",
+  "team": "Nombre del equipo principal o Liga BetPlay",
+  "category": "RESULTADO | FICHAJE | TABLA | GOLEADOR | LESIÓN | RUMOR | ESPECIAL",
+  "highlight": "Dato o estadística interesante.",
+  "imageKeywords": ["futbol", "colombia", "estadio"],
+  "hashtags": "#LigaBetPlay #hashtag2 #hashtag3 #hashtag4 #hashtag5",
+  "caption": "Caption TikTok con emojis, enganchador, máximo 140 caracteres",
+  "article": {
+    "seoTitle": "Título SEO con palabras clave y nombre del equipo",
+    "metaDescription": "Descripción 150 caracteres para Google",
+    "wordCount": 400,
+    "sections": [
+      { "subtitle": "Lo que pasó", "content": "Párrafo completo mínimo 80 palabras con contexto, lugar, fecha y protagonistas." },
+      { "subtitle": "Cómo fue", "content": "Párrafo con detalles, estadísticas, minutos de gol, tarjetas. Mínimo 80 palabras." },
+      { "subtitle": "La reacción", "content": "Párrafo con declaraciones, contexto de temporada, posición en tabla. Mínimo 80 palabras." },
+      { "subtitle": "Lo que viene", "content": "Próximos partidos e implicaciones para la clasificación. Mínimo 60 palabras." }
+    ]
+  }
+}`;
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, apiKey, topic })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const rawText = data.text || '';
+    const newsImageUrl = data.newsImageUrl || null;
+
+    const match = rawText.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No se encontró JSON en la respuesta. Intenta de nuevo.');
+
+    const parsed = JSON.parse(match[0]);
+    currentData = {
+      ...parsed,
+      headline:   clean(parsed.headline),
+      summary:    clean(parsed.summary),
+      highlight:  clean(parsed.highlight),
+      caption:    clean(parsed.caption),
+      hashtags:   clean(parsed.hashtags),
+      team:       clean(parsed.team),
+      newsImageUrl: newsImageUrl,
+    };
+    if (currentData.article?.sections) {
+      currentData.article.sections = currentData.article.sections.map(s => ({
+        subtitle: clean(s.subtitle),
+        content:  clean(s.content),
+      }));
+      currentData.article.seoTitle = clean(currentData.article.seoTitle);
+      currentData.article.metaDescription = clean(currentData.article.metaDescription);
+    }
+
+    await renderPost(currentData);
+    renderArticle(currentData);
+    renderCaption(currentData);
+    showOutput();
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── RENDER POST ──────────────────────────────────────────
+async function renderPost(d) {
+  const accent = getAccent(d.team);
+
+  // ── IMAGEN: noticia real > logo Wikipedia > fallback ──
+  const hero = document.getElementById('post-img-hero');
+  const img = document.getElementById('post-img');
+  const fallback = document.getElementById('post-img-fallback');
+
+  hero.style.background = `linear-gradient(135deg, #050A14 0%, ${accent}22 100%)`;
+
+  if (d.newsImageUrl) {
+    // Imagen real del artículo de la noticia
+    img.style.display = 'block';
+    img.style.objectFit = 'cover';
+    img.style.padding = '0';
+    img.style.filter = 'none';
+    fallback.style.display = 'none';
+    img.src = d.newsImageUrl;
+    img.onerror = async () => {
+      // Si falla la imagen del artículo, intentar logo del equipo
+      const logoUrl = await fetchTeamLogo(d.team);
+      if (logoUrl) {
+        img.style.objectFit = 'contain';
+        img.style.padding = '20px';
+        img.style.filter = 'drop-shadow(0 0 24px ' + accent + '55)';
+        img.src = logoUrl;
+        img.onerror = () => { img.style.display='none'; fallback.style.display='flex'; };
+      } else {
+        img.style.display = 'none';
+        fallback.style.display = 'flex';
+        fallback.style.background = `linear-gradient(135deg, #050A14, ${accent}33)`;
+        fallback.innerHTML = '<span style="font-size:72px; opacity:0.4">⚽</span>';
+      }
+    };
+  } else {
+    // Sin imagen de noticia: intentar logo del equipo en Wikipedia
+    const logoUrl = await fetchTeamLogo(d.team);
+    if (logoUrl) {
+      img.style.display = 'block';
+      img.style.objectFit = 'contain';
+      img.style.padding = '20px';
+      img.style.filter = 'drop-shadow(0 0 24px ' + accent + '55)';
+      fallback.style.display = 'none';
+      img.src = logoUrl;
+    } else {
+      img.style.display = 'none';
+      fallback.style.display = 'flex';
+      fallback.style.background = `linear-gradient(135deg, #050A14, ${accent}33)`;
+      fallback.innerHTML = '<span style="font-size:72px; opacity:0.4">⚽</span>';
+    }
+  }
+
+  // categoria pill
+  const pill = document.getElementById('post-category');
+  pill.textContent = '⚽ ' + (d.category || 'NOTICIA');
+  pill.style.background = accent;
+  pill.style.color = accent === '#FFFFFF' ? '#050A14' : '#050A14';
+
+  // team badge
+  const badge = document.getElementById('post-team');
+  if (d.team && d.team !== 'Liga BetPlay') {
+    badge.textContent = d.team;
+    badge.style.color = accent;
+    badge.style.borderColor = accent + '45';
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  document.getElementById('post-headline').textContent = d.headline;
+  document.getElementById('post-headline').style.fontSize = d.headline.length > 55 ? '17px' : '22px';
+  document.getElementById('post-summary').textContent = d.summary;
+  document.getElementById('post-highlight').textContent = d.highlight;
+
+  // accent colors on post
+  document.querySelector('.post-divider').style.background = `linear-gradient(90deg, ${accent}, transparent)`;
+  document.querySelector('.post-highlight').style.borderLeftColor = accent;
+  document.querySelector('.post-highlight').style.background = accent + '12';
+  document.querySelector('.post-highlight-label').style.color = accent;
+  document.querySelector('.post-cta').style.borderColor = accent + '35';
+  document.querySelector('.post-cta').style.background = accent + '10';
+  document.querySelector('.post-cta-url').style.color = accent;
+  document.querySelector('.post-footer-tag').style.color = accent;
+
+  document.getElementById('post-date').textContent =
+    new Date().toLocaleDateString('es-CO', { day:'numeric', month:'long' }).toUpperCase();
+}
+
+// ── RENDER ARTICLE ───────────────────────────────────────
+function renderArticle(d) {
+  const a = d.article;
+  if (!a) return;
+  const accent = getAccent(d.team);
+
+  document.getElementById('article-category').textContent = d.category || 'NOTICIA';
+  document.getElementById('article-category').style.background = accent;
+  document.getElementById('article-date').textContent =
+    new Date().toLocaleDateString('es-CO', { day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('article-seo-title').textContent = a.seoTitle;
+  document.getElementById('article-meta-desc').textContent = a.metaDescription;
+  document.getElementById('article-word-count').textContent = `~${a.wordCount || 400} palabras`;
+
+  document.querySelector('.article-divider').style.background =
+    `linear-gradient(90deg, ${accent}40, transparent)`;
+
+  const sectionsEl = document.getElementById('article-sections');
+  sectionsEl.innerHTML = '';
+  (a.sections || []).forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'article-section';
+    div.innerHTML = `<h3>▸ ${s.subtitle}</h3><p>${s.content}</p>`;
+    div.querySelector('h3').style.color = accent;
+    sectionsEl.appendChild(div);
+  });
+  syncArticleImage();
+}
+
+// ── RENDER CAPTION ───────────────────────────────────────
+function renderCaption(d) {
+  document.getElementById('caption-text').innerHTML =
+    `${d.caption}<br><br><span class="caption-hashtags">${d.hashtags}</span><br>🔗 tuliganoticias.blogspot.com`;
+  document.getElementById('caption-section').style.display = 'block';
+}
+
+// ── COPY ────────────────────────────────────────────────
+function copyCaption() {
+  if (!currentData) return;
+  navigator.clipboard.writeText(
+    `${currentData.caption}\n\n${currentData.hashtags}\n\n🔗 tuliganoticias.blogspot.com`
+  );
+  const btn = document.getElementById('btn-copy-caption');
+  btn.textContent = '✅ ¡Copiado!'; btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '📋 Copiar caption completo'; btn.classList.remove('copied'); }, 2000);
+}
+
+// ── IMAGE PICKER ─────────────────────────────────────────
+function toggleImgPicker() {
+  var p = document.getElementById('img-picker');
+  var v = p.style.display !== 'none';
+  p.style.display = v ? 'none' : 'block';
+  if (!v) document.getElementById('img-url-input').focus();
+}
+function switchPickerTab(tab) {
+  document.getElementById('tab-url').classList.toggle('active', tab==='url');
+  document.getElementById('tab-file').classList.toggle('active', tab==='file');
+  document.getElementById('picker-url-body').style.display = tab==='url'?'block':'none';
+  document.getElementById('picker-file-body').style.display = tab==='file'?'block':'none';
+}
+function applyUrlImage() {
+  var url = document.getElementById('img-url-input').value.trim();
+  if (!url) return;
+  var img = document.getElementById('post-img');
+  var fb = document.getElementById('post-img-fallback');
+  img.style.display='block'; img.style.objectFit='cover'; img.style.padding='0'; img.style.filter='none';
+  fb.style.display='none'; img.src=url;
+  img.onerror=function(){ alert('No se pudo cargar. Usa URL directa a imagen.'); img.style.display='none'; fb.style.display='flex'; };
+  document.getElementById('img-picker').style.display='none';
+  syncArticleImage();
+}
+function applyFileImage(event) {
+  var file = event.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('post-img');
+    var fb = document.getElementById('post-img-fallback');
+    img.style.display='block'; img.style.objectFit='cover'; img.style.padding='0'; img.style.filter='none';
+    fb.style.display='none'; img.src=e.target.result;
+    document.getElementById('img-picker').style.display='none';
+    syncArticleImage();
+  };
+  reader.readAsDataURL(file);
+}
+function syncArticleImage() {
+  var postImg = document.getElementById('post-img');
+  var imgWrap = document.getElementById('article-img-wrap');
+  var articleImg = document.getElementById('article-img');
+  var urlRow = document.getElementById('article-img-url-row');
+  var urlText = document.getElementById('article-img-url-text');
+  var src = (postImg && postImg.style.display!=='none') ? postImg.src : '';
+  if (src && src.indexOf('http')===0) {
+    articleImg.src=src; imgWrap.style.display='block'; urlText.textContent=src; urlRow.style.display='flex';
+  } else if (src && src.indexOf('data:')===0) {
+    articleImg.src=src; imgWrap.style.display='block'; urlRow.style.display='none';
+  } else {
+    imgWrap.style.display='none'; urlRow.style.display='none';
+  }
+}
+function copyImageUrl() {
+  var t = document.getElementById('article-img-url-text').textContent;
+  if (!t || t==='—') return;
+  navigator.clipboard.writeText(t);
+  var btn = document.querySelector('.article-img-copy-btn');
+  btn.textContent='✅ Copiada'; setTimeout(function(){ btn.textContent='📋 Copiar URL'; }, 2000);
+}
+
+// ── COPIAR ARTÍCULO ───────────────────────────────────────
+function buildArticleHTML() {
+  if (!currentData || !currentData.article) return '';
+  var a = currentData.article;
+  var imgEl = document.getElementById('post-img');
+  var imgSrc = (imgEl && imgEl.style.display!=='none') ? imgEl.src : '';
+  var hasHttpImg = imgSrc && imgSrc.indexOf('http')===0;
+  var date = new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+  var accent = currentData.team ? getAccent(currentData.team) : '#00E5A0';
+
+  var imgBlock = '';
+  if (hasHttpImg) {
+    imgBlock = '<div style="text-align:center;margin:20px 0;">'
+      + '<img src="' + imgSrc + '" alt="' + a.seoTitle.replace(/"/g,'') + '" '
+      + 'style="max-width:100%;height:auto;border-radius:10px;display:block;margin:0 auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);"/>'
+      + '</div>';
+  }
+
+  var sectionsHTML = '';
+  (a.sections||[]).forEach(function(s) {
+    sectionsHTML +=
+      '<h2 style="font-family:Arial,sans-serif;font-size:18px;font-weight:900;color:' + accent + ';'
+      + 'text-transform:uppercase;letter-spacing:1px;margin:28px 0 10px;padding-left:12px;'
+      + 'border-left:3px solid ' + accent + ';">'
+      + '▸ ' + s.subtitle + '</h2>'
+      + '<p style="font-family:Georgia,serif;font-size:15px;line-height:1.85;color:#E8EDF2;margin-bottom:16px;">'
+      + s.content + '</p>';
+  });
+
+  return '<div style="background:#080E18;padding:28px 32px;border-radius:14px;max-width:760px;margin:0 auto;border:1px solid rgba(255,255,255,0.07);">'
+    + '<p style="font-family:Georgia,serif;font-size:14px;font-style:italic;color:' + accent + ';'
+    + 'margin-bottom:20px;padding:12px 16px;background:rgba(0,229,160,0.07);border-radius:8px;">'
+    + a.metaDescription + '</p>'
+    + imgBlock
+    + '<div style="height:2px;background:linear-gradient(90deg,' + accent + ',transparent);margin:20px 0 24px;border-radius:2px;"></div>'
+    + sectionsHTML
+    + '<div style="height:1px;background:rgba(255,255,255,0.08);margin:28px 0 16px;"></div>'
+    + '<p style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:1px;">'
+    + '⚽ LIGABETPLAY · ' + date.toUpperCase() + '</p>'
+    + '</div>';
+}
+
+function copyArticleHTML() {
+  var html = buildArticleHTML(); if (!html) return;
+  navigator.clipboard.writeText(html);
+  var btn = document.getElementById('btn-copy-html');
+  btn.textContent='✅ HTML copiado!'; btn.classList.add('copied');
+  setTimeout(function(){ btn.textContent='🌐 Copiar HTML'; btn.classList.remove('copied'); }, 2500);
+}
+function copyArticlePlain() {
+  if (!currentData||!currentData.article) return;
+  var a = currentData.article;
+  var imgEl = document.getElementById('post-img');
+  var imgSrc = (imgEl && imgEl.style.display!=='none') ? imgEl.src : '';
+  var lines = [a.seoTitle,'',a.metaDescription,''];
+  if (imgSrc && imgSrc.indexOf('http')===0) lines.push('IMAGEN: '+imgSrc,'');
+  (a.sections||[]).forEach(function(s){ lines.push('## '+s.subtitle,'',s.content,''); });
+  lines.push('---','Siguenos en TikTok para mas noticias de la Liga BetPlay.');
+  navigator.clipboard.writeText(lines.join('\n'));
+  var btn = document.getElementById('btn-copy-plain');
+  btn.textContent='✅ Copiado'; btn.classList.add('copied');
+  setTimeout(function(){ btn.textContent='📋 Copiar texto'; btn.classList.remove('copied'); }, 2000);
+}
+
+// ── UI HELPERS ───────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-post').classList.toggle('active', tab === 'post');
+  document.getElementById('tab-article').classList.toggle('active', tab === 'article');
+  document.getElementById('post-panel').style.display = tab === 'post' ? 'flex' : 'none';
+  document.getElementById('article-panel').style.display = tab === 'article' ? 'block' : 'none';
+}
+
+function showOutput() {
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('tabs').style.display = 'flex';
+  switchTab('post');
+}
+
+function setLoading(on) {
+  document.getElementById('btn-generate').disabled = on;
+  document.getElementById('btn-generate').textContent = on ? '🔍 GENERANDO...' : '⚡ GENERAR TODO';
+  if (on) {
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('post-panel').style.display = 'none';
+    document.getElementById('article-panel').style.display = 'none';
+    document.getElementById('tabs').style.display = 'none';
+    document.getElementById('spinner').style.display = 'flex';
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = '⚠️ ' + msg;
+  box.style.display = 'block';
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('spinner').style.display = 'none';
+}
+function hideError() { document.getElementById('error-box').style.display = 'none'; }
+</script>
+</body>
+</html>
